@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Response Output</title>
+</head>
+<body>
+  <h2>API Response from /sentence/fighting</h2>
+  <pre id="jsonOutput">Loading...</pre>
+
+  <script>
+    async function loadData() {
+      try {
+        const response = await fetch('http://localhost:8000/sentence/fighting');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        document.getElementById('jsonOutput').innerText = JSON.stringify(data, null, 2);
+      } catch (error) {
+        document.getElementById('jsonOutput').innerText = 'Error fetching data: ' + error.message;
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb_local
+    restart: unless-stopped
+    ports:
+      - "27017:27017"  # expose MongoDB default port to host
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root     # root username (change for production)
+      MONGO_INITDB_ROOT_PASSWORD: example  # root password (change for production)
+    volumes:
+      - mongo_data:/data/db                 # persist DB data on host
+
+volumes:
+  mongo_data:

@@ -1,0 +1,24 @@
+video:
+  video_id: "2YLP7n66zdM"
+
+cefr:
+  min_level: 4.0
+  max_level: 9.0
+
+dictionary_api:
+  api_url: "https://api.dictionaryapi.dev/api/v2/entries/en/"
+  max_concurrent_requests: 4
+  max_retries: 5
+  retry_backoff_base: 1  # seconds
+
+translation:
+  min_translate_level: 5.0
+  target_language: "ru"
+
+mongodb:
+  username: "root"
+  password: "example"
+  host: "localhost"
+  port: 27017
+  db_name: "video_transcripts"
+  collection_name: "transcripts"
