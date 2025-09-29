@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Match Word and Definition</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .container { display: flex; justify-content: center; gap: 50px; margin-top: 30px; }
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 250px;
+    }
+    button {
+      padding: 8px 15px;
+      font-size: 1em;
+      cursor: pointer;
+      border: 1px solid #555;
+      border-radius: 5px;
+      background-color: #f0f0f0;
+      transition: background-color 0.3s ease;
+    }
+    button.selected {
+      background-color: #cce5ff;
+      border-color: #004085;
+    }
+    button.correct {
+      background-color: #d4edda;
+      border-color: #155724;
+      color: #155724;
+      cursor: default;
+    }
+    button.incorrect {
+      background-color: #f8d7da;
+      border-color: #721c24;
+      color: #721c24;
+    }
+    button.inactive {
+      cursor: default;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <h1>Match Word and Definition</h1>
+  <div class="container">
+    <div class="column" id="words-column">
+      <h3>Words</h3>
+      <!-- Word buttons go here -->
+    </div>
+    <div class="column" id="definitions-column">
+      <h3>Definitions</h3>
+      <!-- Definition buttons go here -->
+    </div>
+  </div>
+  <p id="match-result" style="margin-top: 30px; font-size: 1.2em;"></p>
+  <p><button onclick="loadMatch()">Load New Exercise</button></p>
+
+<script>
+  let matchData = null; // API response holds words, shuffled definitions and answers map
+  let selectedWordBtn = null;
+  let selectedDefBtn = null;
+  let selectedWordText = null;
+  let selectedDefText = null;
+  const matchedWords = new Set();
+
+  // Fisher-Yates shuffle function
+  function shuffleArray(array) {
+    const arr = array.slice(); // copy array to avoid mutating original
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  async function loadMatch() {
+    const res = await fetch('http://localhost:8000/exercise/match');
+    matchData = await res.json();
+
+    // Shuffle definitions on frontend
+    matchData.definitions = shuffleArray(matchData.definitions);
+
+    selectedWordBtn = null;
+    selectedDefBtn = null;
+    selectedWordText = null;
+    selectedDefText = null;
+    matchedWords.clear();
+
+    const wordsColumn = document.getElementById('words-column');
+    const definitionsColumn = document.getElementById('definitions-column');
+    wordsColumn.innerHTML = '<h3>Words</h3>';
+    definitionsColumn.innerHTML = '<h3>Definitions</h3>';
+    document.getElementById('match-result').textContent = '';
+
+    // Add buttons for words
+    matchData.words.forEach((word) => {
+      const btn = document.createElement('button');
+      btn.textContent = word;
+      btn.onclick = () => onWordClick(word, btn);
+      wordsColumn.appendChild(btn);
+    });
+
+    // Add buttons for definitions (shuffled already)
+    matchData.definitions.forEach((definition) => {
+      const btn = document.createElement('button');
+      btn.textContent = definition;
+      btn.onclick = () => onDefinitionClick(definition, btn);
+      definitionsColumn.appendChild(btn);
+    });
+  }
+
+  function onWordClick(word, btn) {
+    if (btn.disabled) return; // Already matched
+    clearSelectedButtons();
+    selectedWordBtn = btn;
+    selectedWordText = word;
+    btn.classList.add('selected');
+  }
+
+  function onDefinitionClick(definition, btn) {
+    if (btn.disabled) return; // Already matched
+    if (!selectedWordBtn) {
+      alert('Please select a word first!');
+      return;
+    }
+    clearSelectedButtons();
+    selectedDefBtn = btn;
+    selectedDefText = definition;
+    btn.classList.add('selected');
+
+    checkMatch();
+  }
+
+  function checkMatch() {
+    if (!selectedWordText || !selectedDefText) return;
+
+    const correctDefinition = matchData.answers[selectedWordText];
+
+    if (selectedDefText === correctDefinition) {
+      // Correct pair
+      selectedWordBtn.classList.add('correct', 'inactive');
+      selectedWordBtn.disabled = true;
+      selectedDefBtn.classList.add('correct', 'inactive');
+      selectedDefBtn.disabled = true;
+
+      matchedWords.add(selectedWordText);
+
+      selectedWordBtn.classList.remove('selected');
+      selectedDefBtn.classList.remove('selected');
+
+      selectedWordBtn = null;
+      selectedDefBtn = null;
+      selectedWordText = null;
+      selectedDefText = null;
+
+      if (matchedWords.size === matchData.words.length) {
+        document.getElementById('match-result').textContent = 'All correct! 🎉';
+      } else {
+        document.getElementById('match-result').textContent = 'Correct! Keep going…';
+      }
+    } else {
+      // Incorrect pair - flash red then reset selection
+      selectedWordBtn.classList.add('incorrect');
+      selectedDefBtn.classList.add('incorrect');
+
+      setTimeout(() => {
+        selectedWordBtn.classList.remove('incorrect', 'selected');
+        selectedDefBtn.classList.remove('incorrect', 'selected');
+
+        selectedWordBtn = null;
+        selectedDefBtn = null;
+        selectedWordText = null;
+        selectedDefText = null;
+
+        document.getElementById('match-result').textContent = 'Try again!';
+      }, 1000);
+    }
+  }
+
+  // Helper to clear selection highlights if user clicks other buttons
+  function clearSelectedButtons() {
+    document.querySelectorAll('button.selected').forEach(btn => btn.classList.remove('selected'));
+  }
+
+  window.onload = loadMatch;
+</script>
+</body>
+</html>

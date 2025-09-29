@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fill the Gap Exercise</title>
+</head>
+<body>
+  <h1>Fill the Gap</h1>
+  
+  <p><span id="masked-word" style="font-size: 2em; letter-spacing: 3px;"></span></p>
+  
+  <input type="text" id="guess" placeholder="Type the full word here" />
+  <button onclick="checkFillGap()">Check</button>
+  <p id="fill-gap-result"></p>
+
+  <!-- New fields to show definition, context and translation -->
+  <hr />
+  <h3>Definition:</h3>
+  <p id="definition"></p>
+
+  <h3>Context:</h3>
+  <p id="context"></p>
+
+  <h3>Translation:</h3>
+  <p id="translation"></p>
+  <hr />
+
+  <p><button onclick="loadFillGap()">Load New Word</button></p>
+
+<script>
+  let fillGapData = null;
+
+  async function loadFillGap() {
+  try {
+    const res = await fetch('/exercise/fill-gap');
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('Non-OK response:', res.status, text);
+      document.getElementById('fill-gap-result').textContent = `Error: ${res.status} - Failed to load data`;
+      return;
+    }
+    fillGapData = await res.json();
+    document.getElementById('masked-word').textContent = fillGapData.masked_word;
+    document.getElementById('guess').value = '';
+    document.getElementById('fill-gap-result').textContent = '';
+    document.getElementById('definition').textContent = fillGapData.definition || "No definition available";
+    document.getElementById('context').textContent = fillGapData.context || "No context available";
+    document.getElementById('translation').textContent = fillGapData.translation || "No translation available";
+  } catch (error) {
+    console.error('Fetch or parsing failed:', error);
+    document.getElementById('fill-gap-result').textContent = 'Error fetching or parsing data';
+  }
+}
+
+
+  function checkFillGap() {
+    const guess = document.getElementById('guess').value.trim();
+    if (!guess) return alert('Please enter your guess.');
+
+    if (guess.toLowerCase() === fillGapData.original_word.toLowerCase()) {
+      document.getElementById('fill-gap-result').textContent = 'Correct! 🎉';
+    } else {
+      document.getElementById('fill-gap-result').textContent = `Incorrect. The correct word is "${fillGapData.original_word}".`;
+    }
+  }
+
+  window.onload = loadFillGap;
+</script>
+</body>
+</html>

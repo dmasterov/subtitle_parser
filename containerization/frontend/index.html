@@ -1,27 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>API Response Output</title>
+  <title>Language Learning App</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { margin-bottom: 20px; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 10px 0; }
+    a { font-size: 1.2em; text-decoration: none; color: #007ACC; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-  <h2>API Response from /sentence/fighting</h2>
-  <pre id="jsonOutput">Loading...</pre>
-
-  <script>
-    async function loadData() {
-      try {
-        const response = await fetch('http://localhost:8000/sentence/fighting');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        document.getElementById('jsonOutput').innerText = JSON.stringify(data, null, 2);
-      } catch (error) {
-        document.getElementById('jsonOutput').innerText = 'Error fetching data: ' + error.message;
-      }
-    }
-
-    loadData();
-  </script>
+  <h1>Language Learning App</h1>
+  <p>Select an exercise type:</p>
+  <ul>
+    <li><a href="/fill-gap.html">Fill the Gap</a></li>
+    <li><a href="/match.html">Match Word and Definition</a></li>
+  </ul>
 </body>
 </html>
